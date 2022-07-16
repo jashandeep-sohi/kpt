@@ -107,3 +107,10 @@ require (
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.1 // indirect
 	sigs.k8s.io/yaml v1.3.0 // indirect
 )
+
+replace (
+	k8s.io/apimachinery => github.com/jashandeep-sohi/apimachinery v0.24.4-rc.0.0.20220716195151-9385d2d3e1c0
+	k8s.io/client-go => github.com/jashandeep-sohi/client-go v0.24.1-0.20220716210833-8ffd17958332
+)
+
+replace sigs.k8s.io/cli-utils => github.com/jashandeep-sohi/cli-utils v0.31.2-0.20220716211209-0c9cef02677a
