@@ -1,0 +1,29 @@
+name: Update gomod2nix
+on:
+  pull_request:
+
+jobs:
+  update-gomod2nix:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.ref }}
+
+      - uses: cachix/install-nix-action@v24
+      - uses: DeterminateSystems/magic-nix-cache-action@main
+
+      - name: Update PR w/ changes to gomod2nix.toml
+        run: |-
+          git config user.name 'github-actions[bot]'
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          nix run .#gomod2nix
+          git add gomod2nix.toml
+
+          if ! git diff --cached --exit-code; then
+            git commit -m "update gomod2nix.toml"
+            git push origin HEAD
+          fi
