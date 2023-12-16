@@ -256,6 +256,9 @@ schema = 3
   [mod."github.com/xlab/treeprint"]
     version = "v1.1.0"
     hash = "sha256-nq0RNV7zpnLmAy9TvH4FJrk2z2vxYZZs3PCZMMxjUJw="
+  [mod."github.com/zoumo/goset"]
+    version = "v0.2.0"
+    hash = "sha256-bOuhFGdmeFkEfkZRQ+wrmx7fGarWGBParfCBifie9VA="
   [mod."go.starlark.net"]
     version = "v0.0.0-20210901212718-87f333178d59"
     hash = "sha256-Z73/bfNc7Wv7iNzXX4jbxeldk9Ndujed0kGoaIcvmvc="
