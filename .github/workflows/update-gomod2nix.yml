@@ -1,0 +1,35 @@
+name: Update gomod2nix
+on:
+  push:
+    branches:
+      - main
+      - build/add-flake # TODO: remove after testing
+
+  workflow_dispatch:
+
+jobs:
+  gomod2nix:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: cachix/install-nix-action@v24
+      - uses: DeterminateSystems/magic-nix-cache-action@main
+
+      - name: Create PR for any changes to gomod2nix.toml
+        run: |-
+          nix run github:dailymotion-oss/octopilot/v1.8.0 -- \
+            --fail-on-error \
+            --log-level debug \
+            --github-auth-method token \
+            --github-token '${{ github.token }}' \
+            --repo '${{ github.repository }}(branch=build/add-flake)' \
+            --update 'exec(cmd=nix,args=run .#gomod2nix)' \
+            --git-branch-prefix 'chore/gomod2nix-' \
+            --git-commit-title 'chore: update gomod2nix.toml' \
+            --git-commit-body '' \
+            --git-commit-footer '' \
+            --git-stage-all-changed false \
+            --git-stage-pattern gomod2nix.toml \
+            --pr-base-branch 'build/add-flake' \
+            --pr-labels=gomod2nix,chore
