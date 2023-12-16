@@ -1,0 +1,37 @@
+name: Update gomod2nix
+on:
+  push:
+    branches:
+      - main
+
+  workflow_dispatch:
+
+jobs:
+  update-gomod2nix:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: cachix/install-nix-action@v24
+      - uses: DeterminateSystems/magic-nix-cache-action@main
+
+      - name: Create PR for any changes to gomod2nix.toml
+        run: |-
+          git config user.name 'github-actions[bot]'
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          nix run github:dailymotion-oss/octopilot/v1.8.0 -- \
+            --fail-on-error \
+            --log-level debug \
+            --github-auth-method token \
+            --github-token '${{ github.token }}' \
+            --repo '${{ github.repository }}(branch=main)' \
+            --update "exec(cmd=sh,args=-c 'test -f gomod2nix.toml && nix run .#gomod2nix')" \
+            --git-branch-prefix 'chore/gomod2nix-' \
+            --git-commit-title 'chore: update gomod2nix.toml' \
+            --git-commit-body 'Run `nix run .#gomod2nix`' \
+            --git-commit-footer '' \
+            --git-stage-all-changed false \
+            --git-stage-pattern gomod2nix.toml \
+            --pr-base-branch 'main' \
+            --pr-labels=gomod2nix,chore
