@@ -38,11 +38,13 @@ import (
 	"k8s.io/component-base/cli"
 	"k8s.io/klog/v2"
 	k8scmdutil "k8s.io/kubectl/pkg/cmd/util"
+  "github.com/zoumo/goset"
 )
 
 func main() {
 	// Handle all setup in the runMain function so os.Exit doesn't interfere
 	// with defer.
+  goset.NewSet()
 	os.Exit(runMain())
 }
 

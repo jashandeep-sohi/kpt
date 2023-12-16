@@ -21,6 +21,7 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.8.1
 	github.com/xlab/treeprint v1.1.0
+	github.com/zoumo/goset v0.2.0
 	golang.org/x/mod v0.9.0
 	golang.org/x/text v0.13.0
 	gopkg.in/yaml.v3 v3.0.1
