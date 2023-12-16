@@ -128,6 +128,35 @@ kpt version will return `unknown` for binaries built from source:
 $ kpt version
 ```
 
+## Nix Flake
+
+Assuming you have Flake support enabled or add `--experimental-features 'nix-command flakes'`,
+you can run any commit with Nix.
+
+Run a paticular tag:
+
+```shell
+$ nix run github:kptdev/kpt/vx.x.x
+```
+
+Or the latest from the default branch:
+
+```shell
+$ nix run github:kptdev/kpt
+```
+
+Or a paticular commit `sha`:
+
+```shell
+$ nix run github:kptdev/kpt/sha
+```
+
+To install to your profile:
+
+```shell
+$ nix profile install github:kptdev/kpt/...
+```
+
 [gcr.io/kpt-dev/kpt]:
   https://console.cloud.google.com/gcr/images/kpt-dev/GLOBAL/kpt?gcrImageListsize=30
 [gcr.io/kpt-dev/kpt-gcloud]:
