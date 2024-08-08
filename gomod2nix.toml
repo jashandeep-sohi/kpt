@@ -53,8 +53,8 @@ schema = 3
     version = "v2.8.2+incompatible"
     hash = "sha256-ocVWMRt5ErWdVsj3rsNa/QhizG5b/PCu8LoOlUi24/c="
   [mod."github.com/docker/docker"]
-    version = "v24.0.9+incompatible"
-    hash = "sha256-JZToreP7NNxIoPLTsA6NTIFlYCGHi1Kty4uzuA253Xw="
+    version = "v25.0.6+incompatible"
+    hash = "sha256-sUMANzDY4ORfD6qQ25NUhi7PPWF5v8NlOFquiVeDZmc="
   [mod."github.com/docker/docker-credential-helpers"]
     version = "v0.7.0"
     hash = "sha256-Np+esoutU1psMWB0G1ayKwaWVn/XemIXxlVlooXphzg="
