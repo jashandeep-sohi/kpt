@@ -542,7 +542,29 @@ func adjustRelResourcesPath(resources []*yaml.RNode, currentPkg, subPkg *pkg.Pkg
 
 func removePkgPathAnnotations(resources []*yaml.RNode) error {
 	for _, r := range resources {
-		if err := pkg.RemovePkgPathAnnotation(r); err != nil {
+		pkgPath, err := pkg.GetPkgPathAnnotation(r)
+		if err != nil {
+			return err
+		}
+		// Note: kioutil.GetFileAnnotation returns OS specific
+		// paths today, https://github.com/kubernetes-sigs/kustomize/issues/3749
+		currPath, _, err := kioutil.GetFileAnnotations(r)
+		if err != nil {
+			return err
+		}
+		newPath, err := pathRelToRoot(string(hctx.root.pkg.UniquePath), pkgPath, currPath)
+		if err != nil {
+			return err
+		}
+		// in kyaml v0.12.0, we are supporting both the new path annotation key
+		// internal.config.kubernetes.io/path, as well as the legacy one config.kubernetes.io/path
+		if err = r.PipeE(yaml.SetAnnotation(kioutil.PathAnnotation, newPath)); err != nil {
+			return err
+		}
+		if err = r.PipeE(yaml.SetAnnotation(kioutil.LegacyPathAnnotation, newPath)); err != nil { // nolint:staticcheck
+			return err
+		}
+		if err = pkg.RemovePkgPathAnnotation(r); err != nil {
 			return err
 		}
 	}
