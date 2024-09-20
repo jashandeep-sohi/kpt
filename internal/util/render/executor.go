@@ -94,6 +94,11 @@ func (e *Renderer) Execute(ctx context.Context) (*fnresult.ResultList, error) {
 		return hctx.fnResults, errors.E(op, root.pkg.UniquePath, err)
 	}
 
+	err = adjustRelResourcesPath(hctx.root.resources, hctx.root.pkg, hctx.root.pkg)
+	if err != nil {
+		return nil, err
+	}
+
 	err = removePkgPathAnnotations(hctx.root.resources)
 	if err != nil {
 		return nil, err
@@ -301,7 +306,7 @@ func hydrate(ctx context.Context, pn *pkgNode, hctx *hydrationContext) (output [
 			return output, errors.E(op, subpkg.UniquePath, err)
 		}
 
-		err = adjustTransitiveResourcesPath(transitiveResources, curr.pkg, subpkg)
+		err = adjustRelResourcesPath(transitiveResources, curr.pkg, subpkg)
 		if err != nil {
 			return output, errors.E(op, subpkg.UniquePath, err)
 		}
@@ -511,9 +516,9 @@ func cloneResources(input []*yaml.RNode) (output []*yaml.RNode) {
 	return
 }
 
-// adjustTransitiveResourcesPath updates the KRM path annotation of transitive resources
+// adjustRelResourcesPath updates the KRM path annotation of resources
 // in a sub-package to be relative to the current-package.
-func adjustTransitiveResourcesPath(resources []*yaml.RNode, currentPkg, subPkg *pkg.Pkg) error {
+func adjustRelResourcesPath(resources []*yaml.RNode, currentPkg, subPkg *pkg.Pkg) error {
 	for _, tr := range resources {
 		currPath, _, err := kioutil.GetFileAnnotations(tr)
 		if err != nil {
