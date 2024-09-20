@@ -94,7 +94,8 @@ func (e *Renderer) Execute(ctx context.Context) (*fnresult.ResultList, error) {
 		return hctx.fnResults, errors.E(op, root.pkg.UniquePath, err)
 	}
 
-	err = removePkgPathAnnotations(hctx.root.resources)
+	// adjust the relative paths of the resources.
+	err = adjustRelPath(hctx)
 	if err != nil {
 		return nil, err
 	}
@@ -297,11 +298,6 @@ func hydrate(ctx context.Context, pn *pkgNode, hctx *hydrationContext) (output [
 		}
 
 		transitiveResources, err = hydrate(ctx, subPkgNode, hctx)
-		if err != nil {
-			return output, errors.E(op, subpkg.UniquePath, err)
-		}
-
-		err = adjustTransitiveResourcesPath(transitiveResources, curr.pkg, subpkg)
 		if err != nil {
 			return output, errors.E(op, subpkg.UniquePath, err)
 		}
@@ -511,33 +507,40 @@ func cloneResources(input []*yaml.RNode) (output []*yaml.RNode) {
 	return
 }
 
-// adjustTransitiveResourcesPath updates the KRM path annotation of transitive resources
-// in a sub-package to be relative to the current-package.
-func adjustTransitiveResourcesPath(resources []*yaml.RNode, currentPkg, subPkg *pkg.Pkg) error {
-	for _, tr := range resources {
-		currPath, _, err := kioutil.GetFileAnnotations(tr)
-		if err != nil {
-			return err
-		}
-		newPath, err := pathRelToRoot(currentPkg.UniquePath.String(), subPkg.UniquePath.String(), currPath)
-		if err != nil {
-			return err
-		}
-
-		if err = tr.PipeE(yaml.SetAnnotation(kioutil.PathAnnotation, newPath)); err != nil {
-			return err
-		}
-
-		if err = tr.PipeE(yaml.SetAnnotation(kioutil.LegacyPathAnnotation, newPath)); err != nil { // nolint:staticcheck
-			return err
-		}
-	}
-	return nil
-}
-
-func removePkgPathAnnotations(resources []*yaml.RNode) error {
+// path (location) of a KRM resources is tracked in a special key in
+// metadata.annotation field that is used to write the resources to the filesystem.
+// When resources are read from local filesystem or generated at a package level, the
+// path annotation in a resource points to path relative to that package. But the resources
+// are written to the file system at the root package level, so
+// the path annotation in each resources needs to be adjusted to be relative to the rootPkg.
+// adjustRelPath updates the path annotation by prepending the path of the package
+// relative to the root package.
+func adjustRelPath(hctx *hydrationContext) error {
+	resources := hctx.root.resources
 	for _, r := range resources {
-		if err := pkg.RemovePkgPathAnnotation(r); err != nil {
+		pkgPath, err := pkg.GetPkgPathAnnotation(r)
+		if err != nil {
+			return err
+		}
+		// Note: kioutil.GetFileAnnotation returns OS specific
+		// paths today, https://github.com/kubernetes-sigs/kustomize/issues/3749
+		currPath, _, err := kioutil.GetFileAnnotations(r)
+		if err != nil {
+			return err
+		}
+		newPath, err := pathRelToRoot(string(hctx.root.pkg.UniquePath), pkgPath, currPath)
+		if err != nil {
+			return err
+		}
+		// in kyaml v0.12.0, we are supporting both the new path annotation key
+		// internal.config.kubernetes.io/path, as well as the legacy one config.kubernetes.io/path
+		if err = r.PipeE(yaml.SetAnnotation(kioutil.PathAnnotation, newPath)); err != nil {
+			return err
+		}
+		if err = r.PipeE(yaml.SetAnnotation(kioutil.LegacyPathAnnotation, newPath)); err != nil { // nolint:staticcheck
+			return err
+		}
+		if err = pkg.RemovePkgPathAnnotation(r); err != nil {
 			return err
 		}
 	}
